@@ -50,7 +50,7 @@
   };
 
   i18nStringsFiles.prototype.writeFile = function(file, data, options, callback) {
-    var buffer, encoding, str, wantsComments;
+    var buffer, encoding, str, wantsComments, wantsEmptyLines;
     encoding = null;
     wantsComments = false;
     if (typeof callback === "undefined" && typeof options === "function") {
@@ -61,8 +61,9 @@
     } else if (typeof options === "object") {
       encoding = options['encoding'];
       wantsComments = options['wantsComments'];
+      wantsEmptyLines = options['wantsEmptyLines'];
     }
-    str = this.compile(data, options);
+    str = this.compile(data, wantsComments, wantsEmptyLines);
     buffer = this.convertStringToBuffer(str, encoding);
     return fs.writeFile(file, buffer, (function(_this) {
       return function(err) {
@@ -72,16 +73,18 @@
   };
 
   i18nStringsFiles.prototype.writeFileSync = function(file, data, options) {
-    var buffer, encoding, str, wantsComments;
+    var buffer, encoding, str, wantsComments, wantsEmptyLines;
     encoding = null;
     wantsComments = false;
+    wantsEmptyLines = false;
     if (typeof options === 'string') {
       encoding = options;
     } else if (typeof options === 'object') {
       encoding = options['encoding'];
       wantsComments = options['wantsComments'];
+      wantsEmptyLines = options['wantsEmptyLines'];
     }
-    str = this.compile(data, options);
+    str = this.compile(data, wantsComments, wantsEmptyLines);
     buffer = this.convertStringToBuffer(str, encoding);
     return fs.writeFileSync(file, buffer);
   };
@@ -166,7 +169,7 @@
     return result;
   };
 
-  i18nStringsFiles.prototype.compile = function(data, wantsComments) {
+  i18nStringsFiles.prototype.compile = function(data, wantsComments, wantsEmptyLines) {
     var comment, msgid, msgstr, output, val;
     if (!wantsComments) {
       wantsComments = false;
@@ -197,6 +200,9 @@
         output = output + "/* " + comment + " */\n";
       }
       output = output + "\"" + msgid + "\" = \"" + msgstr + "\";\n";
+      if (wantsEmptyLines) {
+      	output = output + "\n";
+      }
     }
     return output;
   };
